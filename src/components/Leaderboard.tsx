@@ -1,0 +1,159 @@
+/**
+ * Copyright 2026 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Table, Avatar, Group, Text, Badge, Paper, Anchor, Pagination, Stack, Center } from '@mantine/core';
+
+/** JSDoc
+ * Defines the structured payload expected for a single row in the leaderboard.
+ * Fields like 'uid' and 'photoURL' may be intentionally nullified by the backend
+ * to preserve anonymous privacy modes.
+ */
+interface LeaderboardEntry {
+  uid: string | null;
+  idKey: string;
+  displayName: string;
+  photoURL: string | null;
+  count: number;
+  isPrivateMode?: boolean;
+}
+
+/** JSDoc
+ * Props expected by the main Leaderboard array renderer.
+ */
+interface LeaderboardProps {
+  entries: LeaderboardEntry[];
+  currentUserId?: string;
+}
+
+/** JSDoc
+ * Generates the paginated table view of global or group leaderboard entries.
+ * Manages local pagination state independently of the backend fetch to rapidly slice the array.
+ * Includes dynamic row shading when the authenticated user locates their own rank.
+ */
+const Leaderboard: React.FC<LeaderboardProps> = ({ entries, currentUserId }) => {
+  const PAGE_SIZE = 50;
+  const [activePage, setPage] = useState(1);
+
+  // If the underlying data array shrinks dynamically (e.g. switching between groups)
+  // Ensure the user is not marooned on an empty, out-of-bounds page.
+  useEffect(() => {
+    if (entries.length > 0 && Math.ceil(entries.length / PAGE_SIZE) < activePage) {
+      setPage(1);
+    }
+  }, [entries.length, activePage]);
+
+  // Handle empty state gracefully
+  if (entries.length === 0) {
+    return (
+      <Paper p="xl" withBorder>
+        <Text c="dimmed" ta="center">No users found</Text>
+      </Paper>
+    );
+  }
+
+  const totalPages = Math.ceil(entries.length / PAGE_SIZE);
+  // Isolate the specific subset of memory-cached arrays needed for the current table page
+  const paginatedEntries = entries.slice((activePage - 1) * PAGE_SIZE, activePage * PAGE_SIZE);
+
+  // Map the subset into distinct UI rows
+  const rows = paginatedEntries.map((entry, index) => {
+    const isCurrentUser = entry.uid === currentUserId;
+    // Calculate the absolute global rank based on the page offset rather than relative row number
+    const globalRank = (activePage - 1) * PAGE_SIZE + index + 1;
+    
+    return (
+      <Table.Tr 
+        key={entry.idKey} 
+        style={isCurrentUser ? { backgroundColor: 'var(--mantine-color-digital-atlas-cyan-light)', fontWeight: 600 } : undefined}
+      >
+        <Table.Td>
+          <Text fw={isCurrentUser ? 800 : 700} size="lg" c={isCurrentUser ? 'digital-atlas-cyan.6' : undefined}>
+            #{globalRank}
+          </Text>
+        </Table.Td>
+        <Table.Td>
+          {/* Branch based on privacy limits. If a UID was exposed, allow hyperlinking to their full profile */}
+          {entry.uid ? (
+            <Anchor component={Link} href={`/profile/${entry.uid}`} underline="never" c="inherit" style={{ display: 'block' }}>
+              <Group gap="sm">
+                <Avatar src={entry.photoURL || undefined} radius="xl" name={entry.displayName} />
+                <div>
+                  <Text size="sm" fw={isCurrentUser ? 700 : 500} c={isCurrentUser ? 'digital-atlas-cyan.6' : undefined}>
+                    {entry.displayName} {isCurrentUser && "(You)"}
+                  </Text>
+                  {entry.isPrivateMode && (
+                    <Text size="xs" c="dimmed" fs="italic">👻 Invisible to others</Text>
+                  )}
+                </div>
+              </Group>
+            </Anchor>
+          ) : (
+            <div style={{ display: 'block', color: 'inherit' }}>
+              <Group gap="sm">
+                <Avatar src={entry.photoURL || undefined} radius="xl" name={entry.displayName} />
+                <div>
+                  <Text size="sm" fw={500}>
+                    {entry.displayName}
+                  </Text>
+                </div>
+              </Group>
+            </div>
+          )}
+        </Table.Td>
+        <Table.Td>
+          <Badge variant={isCurrentUser ? "filled" : "light"} color="digital-atlas-cyan" size="lg" radius="sm">
+            {entry.count} Countries
+          </Badge>
+        </Table.Td>
+      </Table.Tr>
+    );
+  });
+
+  return (
+    <Stack gap="md">
+      <Paper withBorder shadow="sm" radius="lg" p="md">
+        <Table verticalSpacing="sm" highlightOnHover>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th w={80}>Rank</Table.Th>
+              <Table.Th>Explorer</Table.Th>
+              <Table.Th w={150}>Countries Visited</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>{rows}</Table.Tbody>
+        </Table>
+      </Paper>
+      
+      {totalPages > 1 && (
+        <Center>
+          <Pagination 
+            total={totalPages} 
+            value={activePage} 
+            onChange={setPage} 
+            color="digital-atlas-cyan" 
+            radius="md" 
+          />
+        </Center>
+      )}
+    </Stack>
+  );
+};
+
+export default Leaderboard;

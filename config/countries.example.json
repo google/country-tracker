@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Atlantis",
+    "code": "AT",
+    "cca3": "ATL",
+    "ccn3": "001",
+    "region": "Oceanic",
+    "capital": "Poseidonis",
+    "flag": "🔱"
+  },
+  {
+    "name": "El Dorado",
+    "code": "ED",
+    "cca3": "ELD",
+    "ccn3": "002",
+    "region": "Mythic",
+    "capital": "Manoa"
+  }
+]
+

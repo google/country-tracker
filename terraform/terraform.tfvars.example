@@ -1,0 +1,37 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# ==============================================================================
+# Country Tracker Terraform Environment Variables Override Template
+# ------------------------------------------------------------------------------
+# Usage:
+# 1. Copy this file: `cp terraform.tfvars.example terraform.tfvars`
+# 2. Modify the placeholder values below with your specific GCP configuration.
+# 3. Securely deploy using `terraform apply`.
+# ==============================================================================
+
+# The true GCP Universal Project Slug
+project_id = "your-gcp-project-id"
+
+# Google Cloud physical deployment region
+region = "us-central1"
+
+# The literal matching target in GitHub (Crucial for IAM restriction rules security mask)
+github_repository = "your-github-username/country-tracker"
+
+# Optional: Set this to map a custom domain directly to the Cloud Run service. 
+# Once applied, point your DNS CNAME record to ghs.googlehosted.com.
+custom_domain = "app.country-tracker.com"
+
+

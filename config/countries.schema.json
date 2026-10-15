@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Country Tracker Configuration Schema",
+  "description": "Schema for config/countries.json defining the list of trackable countries or territories.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["name", "code"],
+    "additionalProperties": false,
+    "properties": {
+      "name": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Display name of the country or destination."
+      },
+      "code": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 2,
+        "pattern": "^[A-Za-z]{2}$",
+        "description": "Unique 2-letter ISO 3166-1 alpha-2 code used as the primary identifier and for generating Unicode flag emojis."
+      },
+      "cca3": {
+        "type": "string",
+        "description": "Optional 3-letter ISO 3166-1 alpha-3 code."
+      },
+      "ccn3": {
+        "type": "string",
+        "description": "Optional 3-digit numeric ISO 3166-1 code (zero-padded, e.g., '004') used to match TopoJSON geometry IDs on the world map."
+      },
+      "region": {
+        "type": "string",
+        "description": "Optional geographic region used for filtering and badges."
+      },
+      "capital": {
+        "type": "string",
+        "description": "Optional capital city name used for display and search filtering."
+      },
+      "flag": {
+        "type": "string",
+        "description": "Optional custom emoji or symbol override if a non-standard flag should be displayed instead of the generated 2-letter regional indicator."
+      }
+    }
+  }
+}
+

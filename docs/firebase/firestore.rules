@@ -1,0 +1,99 @@
+/**
+ * Copyright 2026 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // =========================================================================
+    // Core Authentication & Utility Definitions
+    // =========================================================================
+    
+    // Restrict operation strictly to verified Google OAuth Sessions.
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Identify if the request explicitly matches the logged-in UID footprint.
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Deny arbitrary traffic at the default boundary
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // =========================================================================
+    // Collection Routing Configurations
+    // =========================================================================
+
+    // Users Collection (Profile & Privacy Tracking)
+    match /users/{userId} {
+      // Anyone logged in can read leaderboards and user pages
+      allow read: if isAuthenticated();
+      // Only the specific user can mutate their own document payload (Stats/Visits/Flags)
+      allow create, update, delete: if isOwner(userId);
+    }
+
+    // Bidirectional Friends / Contact Connections
+    match /friends/{friendshipId} {
+      allow read: if isAuthenticated();
+      
+      // Permit a send if the logged-in user natively requests it
+      allow create: if isAuthenticated() && request.resource.data.requesterId == request.auth.uid;
+      
+      // Allow accepting an inbound request only if the user is explicitly targeted
+      allow update: if isAuthenticated() && (resource.data.receiverId == request.auth.uid || resource.data.requesterId == request.auth.uid);
+      
+      // Either party can drop the connection
+      allow delete: if isAuthenticated() && (resource.data.receiverId == request.auth.uid || resource.data.requesterId == request.auth.uid);
+    }
+
+    // Global Public & Private Groups
+    match /groups/{groupId} {
+      allow read: if isAuthenticated();
+      
+      // Founders mandate themselves as the owner entity mapping
+      allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
+      
+      // Allow updates: owners can change anything, non-owners can only update memberCount (when joining)
+      allow update: if isAuthenticated() && 
+        (
+          isOwner(resource.data.ownerId) || 
+          (
+            request.resource.data.ownerId == resource.data.ownerId &&
+            request.resource.data.name == resource.data.name &&
+            request.resource.data.description == resource.data.description &&
+            request.resource.data.visibility == resource.data.visibility
+          )
+        ); 
+      
+      // Only the explicit owner defined in the document struct can delete the instance natively
+      allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // Granular Group Relationship Definitions
+    match /group_members/{membershipId} {
+      allow read: if isAuthenticated();
+      
+      // Anyone tracked in the primary app environment can enroll 
+      // User mapping and structural deletion spans automatically
+      allow create, update, delete: if isAuthenticated(); 
+    }
+  }
+}
