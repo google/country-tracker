@@ -57,6 +57,7 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     if (activeTab === 'groups' && !selectedGroupId && groupOptions.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedGroupId(groupOptions[0].value);
     }
   }, [activeTab, selectedGroupId, groupOptions]);

@@ -55,6 +55,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ entries, currentUserId }) => 
   // Ensure the user is not marooned on an empty, out-of-bounds page.
   useEffect(() => {
     if (entries.length > 0 && Math.ceil(entries.length / PAGE_SIZE) < activePage) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPage(1);
     }
   }, [entries.length, activePage]);

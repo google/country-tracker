@@ -155,7 +155,7 @@ export const firebaseGroupRepository: IGroupRepository = {
   async searchPublicGroups(searchTerm: string, pageSize: number = 20, lastVisible: any = null) {
     const groupsRef = collection(db, 'groups');
     
-    let constraints: any[] = [
+    const constraints: import('firebase/firestore').QueryConstraint[] = [
       where('visibility', '==', 'public'),
       limit(50)
     ];
