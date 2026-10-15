@@ -32,12 +32,23 @@ const eslintConfig = defineConfig([
   ]),
   {
     rules: {
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-require-imports": "off",
-      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
       "@next/next/no-img-element": "off",
       "react/no-unescaped-entities": "off",
-      "react-hooks/set-state-in-effect": "off",
+    },
+  },
+  {
+    files: ["src/lib/services/registry.ts", "__tests__/**/*"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
     },
   },
 ]);

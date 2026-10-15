@@ -56,12 +56,14 @@ const CountryList: React.FC<CountryListProps> = ({ visitedCountries, onToggleCou
   // Incrementally render chunked components down the DOM tree as the user hits the threshold
   useEffect(() => {
     if (entry?.isIntersecting) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisplayCount((prev) => Math.min(prev + 24, filteredCountries.length));
     }
   }, [entry?.isIntersecting, filteredCountries.length]);
 
   // Reset the progressive loading cursor back to base whenever the filter term changes natively
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDisplayCount(24);
   }, [search]);
 

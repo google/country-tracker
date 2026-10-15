@@ -48,6 +48,7 @@ export default function SettingsPage() {
   useEffect(() => {
     if (profile) {
       if (profile.privacy) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setPrivacy(profile.privacy);
       }
       if (profile.displayName) {
