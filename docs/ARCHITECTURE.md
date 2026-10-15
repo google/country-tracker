@@ -45,16 +45,16 @@ You can implement your own backend by following these steps:
 2.  **Register the Implementation**: Update `src/lib/services/registry.ts` to include your new backend type in the switch statement, instantiating your classes.
 3.  **Configure Environment**: Set `NEXT_PUBLIC_BACKEND_TYPE` in your `.env.local` to your new identifier and add any backend-specific connection strings or keys.
 
-### Deployment Configuration for Custom Backends
+### Build Configuration for Custom Backends
 
-To deploy the application with a custom backend (or an alternative like Firebase), the build process relies on a generated `.env` file rather than hardcoded variables in the Dockerfile.
+To build or containerize the application with a custom backend (or an alternative like Firebase), the build process reads environment variables from a `.env` file rather than hardcoding variables in the `Dockerfile`.
 
-#### 1. Update GitHub Actions Workflow (`.github/workflows/deploy.yml`)
-Update the `Generate .env file for build` step to append your custom backend variables to the `.env` file. This ensures Next.js inlines them during the build.
+#### 1. Provide Environment Variables Before Building
+Populate a `.env` file with your custom backend variables before running `npm run build` or `docker build`. This ensures Next.js inlines any `NEXT_PUBLIC_*` variables during compilation:
 
-Example:
-```yaml
-          echo "NEXT_PUBLIC_MY_CUSTOM_VAR=${{ vars.MY_CUSTOM_VAR }}" >> .env
+```env
+NEXT_PUBLIC_BACKEND_TYPE="mycustom"
+NEXT_PUBLIC_MY_CUSTOM_VAR="your-custom-value"
 ```
 
 #### 2. Update `next.config.ts` (Optional but Recommended)
@@ -66,12 +66,12 @@ Example:
     const required = ['NEXT_PUBLIC_MY_CUSTOM_VAR'];
     const missing = required.filter(key => !process.env[key]);
     if (missing.length > 0) {
-      throw new Error(`Missing required environment variables for MyCustom backend: \${missing.join(', ')}`);
+      throw new Error(`Missing required environment variables for MyCustom backend: ${missing.join(', ')}`);
     }
   }
 ```
 
-The `Dockerfile` is backend-agnostic and does not need modification for new variables, as it automatically copies the generated `.env` file.
+The `Dockerfile` is backend-agnostic and does not need modification for new variables, as it automatically copies the `.env` file during the build stage.
 
 ## Country List Configuration
 

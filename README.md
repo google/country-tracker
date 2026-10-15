@@ -49,15 +49,16 @@ To maintain an uncluttered root repository, extensive engineering and DevOps spe
 | 🧰 **[TECH_STACK.md](./docs/TECH_STACK.md)** | Overview of the frontend, backend, and testing frameworks used. |
 | 📋 **[PRODUCT.md](./docs/PRODUCT.md)** | Product vision, user stories, and design guidelines. |
 
-## 🧪 Testing
+## 🧪 Testing & CI
 
-We utilize Jest and React Testing Library to aggressively lock functionality and trap cache bleed:
+We utilize Jest, React Testing Library, ESLint, and TypeScript to validate code quality and prevent regressions:
 ```bash
+npm run lint
+npx tsc --noEmit
 npm test
 ```
 
-## ✨ CI/CD 
-All code commits submitted into the `main` branch are instantly handled by a rigorous GitHub Actions pipeline. Code is parsed, tested sequentially, built natively via internal `.nvmrc` references, embedded inside an optimized `standalone` Next.js Docker configuration, and fast-forward swapped on Google Cloud Run utilizing zero-downtime rollouts.
+All pull requests and commits to `main` are automatically validated by our [GitHub Actions CI workflow](./.github/workflows/ci.yml), which checks out the repository using the Node.js version specified in `.nvmrc` and runs linting, static type checking, and the full Jest test suite with coverage.
 
 ## 🤝 Contributing & License
 

@@ -29,4 +29,5 @@ Guidelines](https://opensource.google/conduct/).
 
 All submissions, including submissions by project members, require review. We
 use [GitHub pull requests](https://docs.github.com/articles/about-pull-requests)
-for this purpose.
+for this purpose. All pull requests automatically run our continuous integration
+checks (`npm run lint`, `npx tsc --noEmit`, and `npm run test:coverage`).

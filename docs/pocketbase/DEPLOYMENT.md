@@ -1,6 +1,9 @@
 # PocketBase & Frontend Deployment Guide
 
-This document outlines the strategy for deploying the Country Tracker application using PocketBase as the backend and Google Cloud Run for the frontend.
+This document outlines the strategy for deploying the Country Tracker application using PocketBase as the backend and Google Cloud Run (or any container host) for the frontend.
+
+> [!NOTE]
+> The repository's GitHub Actions workflow (`.github/workflows/ci.yml`) only runs automated code checks and tests on pull requests and pushes to `main`. It does not perform automated deployments.
 
 ## 1. PocketBase Deployment (Backend)
 
@@ -37,18 +40,30 @@ CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8080"]
 
 ## 2. Next.js Deployment (Frontend on Cloud Run)
 
-You can reuse the existing Google Cloud Run setup for the frontend! The only difference is the environment variables.
+### Step 1: Configure Build Environment & Country List
 
-### Step 1: Update GitHub Variables
+Before building the frontend container image, create a `.env` file in the project root and populate `config/countries.json` (matching [`config/countries.schema.json`](../../config/countries.schema.json)):
 
-To deploy the frontend connected to PocketBase, configure the following Repository Variables in GitHub (Settings > Secrets and variables > Actions > Variables):
+```env
+NEXT_PUBLIC_BACKEND_TYPE=pocketbase
+NEXT_PUBLIC_POCKETBASE_URL=https://your-pocketbase-app.fly.dev
+```
 
--   `NEXT_PUBLIC_BACKEND_TYPE`: Set to `pocketbase` (optional, as it is the default).
--   `NEXT_PUBLIC_POCKETBASE_URL`: Set to your deployed PocketBase instance URL (e.g., `https://your-pocketbase-app.fly.dev`).
--   `COUNTRIES_JSON`: Set to your JSON array of country objects (matching [`config/countries.schema.json`](../../config/countries.schema.json)). The workflow writes this to `config/countries.json` before building the container.
+Next.js will inline these variables and your `config/countries.json` file during the container build stage.
 
-The GitHub Actions workflow (`deploy.yml`) will automatically generate `.env` and `config/countries.json` with these variables during the build process, and Next.js will inline them into the build.
+### Step 2: Build and Deploy Container Image
 
-### Step 2: Deploy Via GitHub Actions
+Build the standalone Next.js Docker image and deploy it to Cloud Run:
 
-The workflow in `.github/workflows/deploy.yml` will build and deploy the standalone Next.js image to Cloud Run. Ensure the GCP secrets are also updated as described in the main deployment documentation.
+```bash
+NODE_VERSION=$(cat .nvmrc | tr -d 'v\n')
+IMAGE_URI="us-central1-docker.pkg.dev/YOUR_GCP_PROJECT_ID/country-tracker-repo/country-tracker-web:latest"
+
+docker build --build-arg NODE_VERSION="${NODE_VERSION}" --tag "${IMAGE_URI}" .
+docker push "${IMAGE_URI}"
+
+gcloud run deploy country-tracker-web \
+  --image "${IMAGE_URI}" \
+  --region us-central1 \
+  --allow-unauthenticated
+```
