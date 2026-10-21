@@ -12,9 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# File: Dockerfile
+# Purpose: Multi-stage container build for the Next.js standalone server.
+# Security Rationale:
+#   - Base images are pinned to immutable SHA-256 digests (`@sha256:...`) in
+#     addition to version tags so builds remain reproducible and immune to
+#     mutable upstream Docker tag overwrites (OpenSSF Scorecard
+#     `Pinned-Dependencies`).
+#   - Runs the production server as a non-root system user (`nextjs`, UID 1001).
+
 # Build Stage
 ARG NODE_VERSION=25.2.1
-FROM node:${NODE_VERSION}-alpine AS builder
+FROM node:${NODE_VERSION}-alpine@sha256:f4769ca6eeb6ebbd15eb9c8233afed856e437b75f486f7fccaa81d7c8ad56007 AS builder
 
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
@@ -35,7 +44,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN npm run build
 
 # Production Stage
-FROM node:${NODE_VERSION}-alpine AS runner
+FROM node:${NODE_VERSION}-alpine@sha256:f4769ca6eeb6ebbd15eb9c8233afed856e437b75f486f7fccaa81d7c8ad56007 AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
