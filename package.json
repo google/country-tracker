@@ -45,6 +45,9 @@
     "react-simple-maps": {
       "react": "$react",
       "react-dom": "$react-dom"
-    }
+    },
+    "@grpc/grpc-js": "^1.13.6",
+    "d3-color": "^3.1.0",
+    "argparse": "^2.0.1"
   }
 }
