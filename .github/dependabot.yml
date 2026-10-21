@@ -1,0 +1,57 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# File: .github/dependabot.yml
+# Purpose: Automated dependency version updates across all ecosystems used in
+#          this repository (npm, GitHub Actions, Docker, and Terraform).
+# Security Rationale:
+#   - Enforces a 7-day release cooldown (`cooldown.default-days: 7`) across all
+#     ecosystems so newly published upstream versions have a quarantine window
+#     before Dependabot proposes upgrading to them, mitigating supply-chain
+#     compromise windows in recently published packages or actions.
+
+version: 2
+updates:
+  # Application and test dependencies (package.json / package-lock.json)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+
+  # GitHub Actions workflows (.github/workflows/*.yml)
+  # Keeps SHA-pinned actions up to date automatically.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+
+  # Container base images (Dockerfile)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+
+  # Cloud Run / GCP infrastructure providers (terraform/*.tf)
+  - package-ecosystem: "terraform"
+    directory: "/terraform"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
