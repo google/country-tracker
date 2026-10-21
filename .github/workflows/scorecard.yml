@@ -1,0 +1,86 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# File: .github/workflows/scorecard.yml
+# Purpose: Runs OpenSSF Scorecard security posture analysis on every push to
+#          `main` and on a weekly schedule, publishing results to the OpenSSF
+#          Scorecard API and uploading SARIF findings to GitHub Code Scanning.
+# Architectural & Security Rationale:
+#   - Top-level `permissions: read-all` enforces least-privilege defaults across
+#     the workflow; elevated permissions (`security-events: write` for SARIF
+#     upload and `id-token: write` for OIDC-verified result publishing) are
+#     scoped strictly to the `analysis` job.
+#   - Uses no Personal Access Token (PAT): GitHub Repository Rulesets on public
+#     repositories are readable with the default `GITHUB_TOKEN`, avoiding the
+#     security risk of long-lived PATs.
+#   - Does not define top-level or job-level `env`/`defaults` or custom `run`
+#     steps inside the `analysis` job, which `ossf/scorecard-action` v2+
+#     strictly forbids when `publish_results: true` is enabled.
+#   - All actions are pinned to full 40-character commit SHAs to prevent
+#     mutable tag hijacking.
+
+name: Scorecard supply-chain security
+
+on:
+  # Only the default branch is supported by OpenSSF Scorecard for push triggers.
+  push:
+    branches:
+      - main
+  schedule:
+    # Weekly scan on Saturdays at 01:30 UTC.
+    - cron: '30 1 * * 6'
+
+# Declare read-only default permissions at the workflow level.
+permissions: read-all
+
+jobs:
+  analysis:
+    name: Scorecard analysis
+    runs-on: ubuntu-latest
+    permissions:
+      # Needed to upload the resulting SARIF file to GitHub Code Scanning.
+      security-events: write
+      # Needed for GitHub OIDC token verification when `publish_results: true`.
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run analysis
+        uses: ossf/scorecard-action@fa7117db83c52d787ae5a89f350999701505d78e # v2.5.0
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          # Publishes verified Scorecard results to the public OpenSSF dataset
+          # using GitHub's ephemeral OIDC token (no PAT required).
+          publish_results: true
+
+      # Upload the SARIF results as a short-lived workflow artifact for debugging.
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: SARIF file
+          path: results.sarif
+          retention-days: 5
+
+      # Upload the SARIF results to GitHub's Security -> Code scanning dashboard.
+      - name: Upload to code-scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
+        with:
+          sarif_file: results.sarif
