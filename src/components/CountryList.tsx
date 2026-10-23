@@ -43,7 +43,6 @@ const SearchIcon = () => (
  * so stamps look organically placed without causing SSR/CSR hydration mismatches.
  */
 const getStampRotation = (code: string): number => {
-  if (!code || code.length < 2) return -8;
   const hash = code.charCodeAt(0) * 7 + code.charCodeAt(1) * 13;
   return -12 + (hash % 9);
 };

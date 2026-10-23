@@ -37,7 +37,7 @@ const CompassIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="8 16 10 10 16 8 14 14 8 16"/><circle cx="12" cy="12" r="9"/></svg>
 );
 
-const getExplorerMilestone = (visitedCount: number): string => {
+export const getExplorerMilestone = (visitedCount: number): string => {
   if (visitedCount === 0) return 'Passport Ready';
   if (visitedCount < 5) return 'Daytripper';
   if (visitedCount < 15) return 'Continent Hopper';

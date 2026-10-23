@@ -164,12 +164,8 @@ const DEFAULT_REGION_ACCENT: RegionAccent = {
  * Resolves the continent accent palette for a given country region string.
  * Gracefully falls back to the Postmark Vermilion accent for custom or synthetic regions.
  */
-export const getRegionAccent = (region?: string): RegionAccent => {
-  if (!region) {
-    return DEFAULT_REGION_ACCENT;
-  }
-  return CONTINENT_PALETTE[region] || DEFAULT_REGION_ACCENT;
-};
+export const getRegionAccent = (region = ''): RegionAccent =>
+  CONTINENT_PALETTE[region] || DEFAULT_REGION_ACCENT;
 
 /** JSDoc
  * The default exported application theme object consumed by MantineProvider at the root layout.

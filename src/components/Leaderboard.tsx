@@ -54,30 +54,25 @@ const PodiumTrophyIcon: React.FC<{ color: string }> = ({ color }) => (
   </svg>
 );
 
-const getPodiumAccent = (rank: number): { color: string; bg: string; label: string } | null => {
-  if (rank === 1) {
-    return {
-      color: '#D97706',
-      bg: 'light-dark(rgba(244, 162, 97, 0.16), rgba(217, 119, 6, 0.15))',
-      label: 'Gold Explorer',
-    };
-  }
-  if (rank === 2) {
-    return {
-      color: '#64748B',
-      bg: 'light-dark(rgba(148, 163, 184, 0.14), rgba(100, 116, 139, 0.14))',
-      label: 'Silver Explorer',
-    };
-  }
-  if (rank === 3) {
-    return {
-      color: '#B45309',
-      bg: 'light-dark(rgba(217, 119, 6, 0.10), rgba(180, 83, 9, 0.12))',
-      label: 'Bronze Explorer',
-    };
-  }
-  return null;
+const PODIUM_ACCENTS: Record<number, { color: string; bg: string; label: string }> = {
+  1: {
+    color: '#D97706',
+    bg: 'light-dark(rgba(244, 162, 97, 0.16), rgba(217, 119, 6, 0.15))',
+    label: 'Gold Explorer',
+  },
+  2: {
+    color: '#64748B',
+    bg: 'light-dark(rgba(148, 163, 184, 0.14), rgba(100, 116, 139, 0.14))',
+    label: 'Silver Explorer',
+  },
+  3: {
+    color: '#B45309',
+    bg: 'light-dark(rgba(217, 119, 6, 0.10), rgba(180, 83, 9, 0.12))',
+    label: 'Bronze Explorer',
+  },
 };
+
+const getPodiumAccent = (rank: number) => PODIUM_ACCENTS[rank] || null;
 
 /** JSDoc
  * Defines the structured payload expected for a single row in the leaderboard.

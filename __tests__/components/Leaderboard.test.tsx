@@ -62,16 +62,33 @@ describe('Leaderboard Component', () => {
       displayName: 'User B',
       photoURL: null,
       count: 5,
+      isPrivateMode: true,
+    },
+    {
+      idKey: 'key_3',
+      uid: null,
+      displayName: 'Anonymous',
+      photoURL: null,
+      count: 3,
+    },
+    {
+      idKey: 'key_4',
+      uid: '4',
+      displayName: 'User D',
+      photoURL: null,
+      count: 1,
     },
   ];
 
   it('should render leaderboard entries correctly', () => {
-    renderWithMantine(<Leaderboard entries={mockEntries} />);
+    renderWithMantine(<Leaderboard entries={mockEntries} currentUserId="2" />);
     
     expect(screen.getByText(/User A/i)).toBeInTheDocument();
     expect(screen.getByText(/10 Countries/i)).toBeInTheDocument();
     expect(screen.getByText(/User B/i)).toBeInTheDocument();
     expect(screen.getByText(/5 Countries/i)).toBeInTheDocument();
+    expect(screen.getByText(/Anonymous/i)).toBeInTheDocument();
+    expect(screen.getByText(/User D/i)).toBeInTheDocument();
   });
 
   it('should display a fallback message when there are no entries', () => {

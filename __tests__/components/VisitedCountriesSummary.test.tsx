@@ -17,16 +17,16 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MantineProvider } from '@mantine/core';
-import VisitedCountriesSummary from '@/components/VisitedCountriesSummary';
-import { theme } from '@/theme';
+import VisitedCountriesSummary, { getExplorerMilestone } from '@/components/VisitedCountriesSummary';
+import { theme, getRegionAccent } from '@/theme';
 
 jest.mock('@/data/countries', () => {
   const actual = jest.requireActual('@/data/countries');
   return {
     ...actual,
     countries: [
-      { code: 'AT', name: 'Atlantis', flag: '🔱' },
-      { code: 'ED', name: 'El Dorado' },
+      { code: 'AT', cca3: 'ATL', name: 'Atlantis', region: 'Asia', flag: '🔱' },
+      { code: 'ED', name: 'El Dorado', region: 'Americas' },
       { code: 'AV', name: 'Avalon' },
     ],
   };
@@ -61,5 +61,17 @@ describe('VisitedCountriesSummary Component', () => {
     renderWithMantine(<VisitedCountriesSummary visitedCountries={['AT', 'REMOVED_CODE']} />);
     expect(screen.getByText('1 / 3')).toBeInTheDocument();
     expect(screen.getByText(/33\.3%/)).toBeInTheDocument();
+  });
+
+  it('should resolve explorer milestones and continent accents across all tiers', () => {
+    expect(getExplorerMilestone(0)).toBe('Passport Ready');
+    expect(getExplorerMilestone(3)).toBe('Daytripper');
+    expect(getExplorerMilestone(10)).toBe('Continent Hopper');
+    expect(getExplorerMilestone(20)).toBe('Jetsetter');
+    expect(getExplorerMilestone(40)).toBe('Globetrotter');
+
+    expect(getRegionAccent('Asia').name).toBe('Asia');
+    expect(getRegionAccent('UnknownRegion').name).toBe('World');
+    expect(getRegionAccent().name).toBe('World');
   });
 });
