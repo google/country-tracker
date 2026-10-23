@@ -68,43 +68,45 @@ export default function LoginPage() {
     <Container size="xs" w="100%" h="100%" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <Card 
         shadow="xl" 
-        p="xl" 
+        p={0} 
         radius="lg" 
         withBorder 
         style={{ 
           textAlign: 'center', 
-          backgroundColor: 'light-dark(var(--mantine-color-white), var(--mantine-color-dark-7))',
+          backgroundColor: 'light-dark(#FFFDF9, #16213A)',
           position: 'relative',
           overflow: 'hidden',
           width: '100%'
         }}
       >
+        <div className="airmail-border" />
         <div style={{
           position: 'absolute',
-          top: 0,
+          top: 6,
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'radial-gradient(circle at top left, light-dark(rgba(0,182,207,0.1), rgba(0,182,207,0.05)) 0%, transparent 40%), radial-gradient(circle at bottom right, light-dark(rgba(65,98,159,0.1), rgba(65,98,159,0.05)) 0%, transparent 40%)',
+          background: 'radial-gradient(circle at top left, light-dark(rgba(29,53,87,0.08), rgba(29,53,87,0.12)) 0%, transparent 45%), radial-gradient(circle at bottom right, light-dark(rgba(230,57,70,0.08), rgba(230,57,70,0.08)) 0%, transparent 45%)',
           zIndex: 0,
           pointerEvents: 'none'
         }} />
         
-        <Stack gap="lg" align="center" style={{ position: 'relative', zIndex: 1 }}>
+        <Stack gap="lg" align="center" p="xl" style={{ position: 'relative', zIndex: 1 }}>
           <div style={{
             padding: '1rem',
             borderRadius: '50%',
-            background: 'light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))',
-            boxShadow: 'var(--mantine-shadow-sm)'
+            background: '#1D3557',
+            color: '#FAF6EE',
+            boxShadow: '0 4px 12px rgba(29, 53, 87, 0.2)'
           }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--mantine-color-digital-atlas-cyan-6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 7l6 -3l6 3l6 -3v13l-6 3l-6 -3l-6 3v-13"/>
               <path d="M9 4v13"/>
               <path d="M15 7v13"/>
             </svg>
           </div>
           
-          <Title order={2} style={{ fontSize: '2rem' }}>World Tracker</Title>
+          <Title order={2} style={{ fontSize: '2rem', fontFamily: 'Georgia, "Times New Roman", serif' }}>World Tracker</Title>
           <Text c="dimmed" size="md" mb="sm">
             Track the countries you've explored and see where you rank against the rest of the world.
           </Text>

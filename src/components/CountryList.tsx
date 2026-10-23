@@ -14,16 +14,39 @@
  * limitations under the License.
  */
 
+/**
+ * CountryList — Destination Grid & Vintage Postmark Stamp Cards
+ *
+ * Architectural Rationale:
+ * 1. Celebrates Visited Cards (No Dimming): Previously, visited cards were faded to `opacity: 0.7`
+ *    with a centered cyan stamp blocking the country name. Now, visited cards remain at 100%
+ *    opacity on a warm sunlit surface with a continent-colored border and left spine accent.
+ * 2. Continent Color-Coding & Varied Postmarks: Each card resolves its continent ink via
+ *    `getRegionAccent(country.region)` and computes a deterministic hand-stamped rotation angle
+ *    from its ISO code so a grid of visited destinations looks like an authentic passport page.
+ */
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { SimpleGrid, Card, Text, Checkbox, TextInput, Group, Badge, Stack } from '@mantine/core';
 import { useIntersection } from '@mantine/hooks';
 import { countries, getFlagEmoji } from '@/data/countries';
+import { getRegionAccent } from '@/theme';
 
 const SearchIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3 -4.3"/></svg>
 );
+
+/**
+ * Computes a deterministic hand-stamped rotation angle (-12deg to -4deg) from a 2-letter code
+ * so stamps look organically placed without causing SSR/CSR hydration mismatches.
+ */
+const getStampRotation = (code: string): number => {
+  if (!code || code.length < 2) return -8;
+  const hash = code.charCodeAt(0) * 7 + code.charCodeAt(1) * 13;
+  return -12 + (hash % 9);
+};
 
 interface CountryListProps {
   visitedCountries: string[];
@@ -87,13 +110,19 @@ const CountryList: React.FC<CountryListProps> = ({ visitedCountries, onToggleCou
   return (
     <>
       <Group justify="space-between" mb="md" mt="xl">
-        <Text fw={600} size="xl">Destinations</Text>
+        <Text
+          fw={700}
+          size="xl"
+          style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
+        >
+          Destinations
+        </Text>
         <TextInput
           placeholder="Search country, capital, or region..."
           leftSection={<SearchIcon />}
           value={search}
           onChange={(e) => setSearch(e.currentTarget.value)}
-          style={{ flexGrow: 1, maxWidth: 300 }}
+          style={{ flexGrow: 1, maxWidth: 320 }}
         />
       </Group>
 
@@ -101,42 +130,82 @@ const CountryList: React.FC<CountryListProps> = ({ visitedCountries, onToggleCou
         {displayedCountries.map((country) => {
           const isVisited = visitedCountries.includes(country.code);
           const isJustStamped = recentlyStamped === country.code;
+          const accent = getRegionAccent(country.region);
+          const stampRotation = getStampRotation(country.code);
           
           return (
             <Card 
               key={country.code} 
+              className="country-card"
               withBorder 
               shadow="sm" 
               padding="lg" 
               radius="md"
               style={{ 
                 cursor: 'pointer',
-                transition: 'transform 0.2s ease, border-color 0.2s ease',
-                borderColor: isVisited ? 'var(--mantine-color-digital-atlas-cyan-6)' : undefined,
-                backgroundColor: isVisited ? 'light-dark(var(--mantine-color-digital-atlas-cyan-0), var(--mantine-color-dark-6))' : undefined,
+                borderColor: isVisited ? accent.hex : undefined,
+                borderLeft: isVisited ? `4px solid ${accent.hex}` : undefined,
+                backgroundColor: isVisited
+                  ? `light-dark(${accent.bgLight}, #1B2945)`
+                  : 'light-dark(#FFFDF9, #16213A)',
                 position: 'relative',
                 overflow: 'hidden'
               }}
               onClick={() => handleToggle(country.code)}
             >
               <Group justify="space-between" align="flex-start" wrap="nowrap">
-                <Group gap="sm" wrap="nowrap" style={{ opacity: isVisited && !isJustStamped ? 0.7 : 1, transition: 'opacity 0.2s ease' }}>
-                  <Text size="xl" style={{ fontSize: '2.5rem', lineHeight: 1 }}>{getFlagEmoji(country.code, country.flag)}</Text>
-                  <Stack gap={0}>
-                    <Text fw={600} size="md" lineClamp={1}>{country.name}</Text>
-                    <Text size="xs" c="dimmed">{country.capital || 'N/A'}</Text>
-                    {country.region && (
-                      <Badge size="xs" variant="dot" color="gray" mt={4} style={{ alignSelf: 'flex-start' }}>
-                        {country.region}
-                      </Badge>
-                    )}
+                <Group gap="sm" wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
+                  <Text size="xl" style={{ fontSize: '2.5rem', lineHeight: 1, flexShrink: 0 }}>
+                    {getFlagEmoji(country.code, country.flag)}
+                  </Text>
+                  <Stack gap={2} style={{ minWidth: 0 }}>
+                    <Text
+                      fw={700}
+                      size="md"
+                      lineClamp={1}
+                      style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
+                    >
+                      {country.name}
+                    </Text>
+                    <Text size="xs" c="dimmed" lineClamp={1}>
+                      {country.capital || 'N/A'}
+                    </Text>
+                    <Group gap={6} mt={4} wrap="wrap">
+                      {country.region && (
+                        <Badge
+                          size="xs"
+                          variant={isVisited ? 'filled' : 'outline'}
+                          style={{
+                            backgroundColor: isVisited ? accent.hex : 'transparent',
+                            borderColor: accent.hex,
+                            color: isVisited ? '#FFFDF9' : accent.hex,
+                            alignSelf: 'flex-start',
+                          }}
+                        >
+                          {country.region}
+                        </Badge>
+                      )}
+                      {country.cca3 && (
+                        <Text
+                          size="xs"
+                          c="dimmed"
+                          style={{
+                            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                            fontSize: '0.68rem',
+                            letterSpacing: '0.8px',
+                          }}
+                        >
+                          {country.cca3}
+                        </Text>
+                      )}
+                    </Group>
                   </Stack>
                 </Group>
                 <Checkbox
                   checked={isVisited}
                   onChange={() => {}} // handled by card click
                   tabIndex={-1}
-                  color="digital-atlas-cyan"
+                  color="passport-navy"
                   radius="xl"
                   size="md"
                   mt={4}
@@ -145,8 +214,16 @@ const CountryList: React.FC<CountryListProps> = ({ visitedCountries, onToggleCou
               </Group>
 
               {isVisited && (
-                <div className={`passport-stamp ${isJustStamped ? 'animating' : ''}`}>
-                  VISITED
+                <div
+                  className={`passport-stamp ${isJustStamped ? 'animating' : ''}`}
+                  style={
+                    {
+                      '--stamp-color': accent.hex,
+                      '--stamp-rotate': `${stampRotation}deg`,
+                    } as React.CSSProperties
+                  }
+                >
+                  ★ {country.cca3 ? `${country.cca3} ` : ''}VISITED
                 </div>
               )}
             </Card>

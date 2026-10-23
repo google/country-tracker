@@ -14,49 +14,92 @@
  * limitations under the License.
  */
 
+/**
+ * Global Stylesheet — "Sunlit Passport & Vintage Air Mail" (Option 1)
+ *
+ * Architectural Rationale:
+ * Provides reusable decorative surfaces that reinforce the tactile travel logbook theme:
+ * 1. `.airmail-border`: Classic diagonal Par Avion red-white-and-navy envelope trim used
+ *    along the top header and summary card edges.
+ * 2. `.passport-stamp`: Double-bordered vintage postmark ink stamp anchored in the lower-right
+ *    corner of visited destination cards so country names and flags remain 100% legible and
+ *    celebrated (never dimmed out). Supports per-card `--stamp-color` (continent ink) and
+ *    `--stamp-rotate` (deterministic hand-stamped angle) custom properties.
+ * 3. `.country-card`: Tactile card hover elevation mimicking physical passport pages.
+ */
+
 @import '@mantine/core/styles.css';
+
+/* Vintage Par Avion Diagonal Trim */
+.airmail-border {
+  height: 6px;
+  width: 100%;
+  background: repeating-linear-gradient(
+    -45deg,
+    #E63946 0px,
+    #E63946 12px,
+    light-dark(#FFFDF9, #16213A) 12px,
+    light-dark(#FFFDF9, #16213A) 20px,
+    #1D3557 20px,
+    #1D3557 32px,
+    light-dark(#FFFDF9, #16213A) 32px,
+    light-dark(#FFFDF9, #16213A) 40px
+  );
+}
 
 /* Passport Stamp Animation */
 @keyframes stamp-in {
   0% {
     opacity: 0;
-    transform: scale(3) rotate(-25deg);
+    transform: scale(2.6) rotate(-24deg);
   }
-  40% {
+  45% {
     opacity: 1;
-    transform: scale(0.8) rotate(-10deg);
+    transform: scale(0.9) rotate(var(--stamp-rotate, -10deg));
   }
   100% {
-    opacity: 0.85;
-    transform: scale(1) rotate(-15deg);
+    opacity: 0.92;
+    transform: scale(1) rotate(var(--stamp-rotate, -10deg));
   }
 }
 
 .passport-stamp {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  margin-top: -30px;
-  margin-left: -60px;
-  width: 120px;
-  height: 60px;
-  border: 4px solid var(--mantine-color-digital-atlas-cyan-6);
-  border-radius: 8px;
-  color: var(--mantine-color-digital-atlas-cyan-6);
+  bottom: 10px;
+  right: 12px;
+  padding: 2px 8px;
+  border: 2px solid var(--stamp-color, #E63946);
+  outline: 1px dashed var(--stamp-color, #E63946);
+  outline-offset: -4px;
+  border-radius: 6px;
+  color: var(--stamp-color, #E63946);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-weight: 800;
-  font-size: 1.4rem;
-  letter-spacing: 2px;
+  font-size: 0.68rem;
+  letter-spacing: 1.4px;
   text-transform: uppercase;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   pointer-events: none;
-  background-color: light-dark(rgba(240, 248, 255, 0.9), rgba(30, 30, 30, 0.9));
+  background-color: light-dark(rgba(255, 253, 249, 0.92), rgba(15, 23, 42, 0.88));
+  box-shadow: 0 1px 2px rgba(29, 53, 87, 0.08);
   z-index: 10;
-  transform: scale(1) rotate(-15deg);
-  opacity: 0.85;
+  transform: scale(1) rotate(var(--stamp-rotate, -10deg));
+  opacity: 0.92;
 }
 
 .passport-stamp.animating {
   animation: stamp-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Tactile Country Card Hover */
+.country-card {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.country-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -6px rgba(29, 53, 87, 0.14);
 }

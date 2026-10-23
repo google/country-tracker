@@ -67,10 +67,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <ColorSchemeScript defaultColorScheme="dark" />
+        {/* Default to light mode so the "Sunlit Passport & Vintage Air Mail" parchment theme shines out of the box */}
+        <ColorSchemeScript defaultColorScheme="light" />
       </head>
       <body className={inter.className}>
-        <MantineProvider theme={theme} defaultColorScheme="dark">
+        <MantineProvider theme={theme} defaultColorScheme="light">
           <AuthProvider>
             <AppShellLayout>
               {children}
