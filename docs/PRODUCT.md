@@ -23,7 +23,7 @@ The application should be highly responsive and fast, especially the map visuali
 The application's tone and voice should be playful and adventurous, inspiring users to explore new places. It should also incorporate a competitive aspect, but in a lighthearted manner, emphasizing good-natured fun among connections rather than intense rivalry.
 
 ### Visual Identity
-The visual identity of the application should feel modern and sleek, utilizing clean lines, minimalist design, and a strong focus on data visualization. This approach will highlight the travel data and leaderboards effectively while maintaining an engaging aesthetic.
+The visual identity of the application follows a **Sunlit Passport & Vintage Air Mail** design system—combining warm parchment surfaces, diagonal *Par Avion* airmail accents, classic editorial serif headings, continent-coded cartography, and vintage postmark ink stamps (with full dark-mode support) to celebrate travel milestones and leaderboards in an inviting, tactile logbook aesthetic.
 
 ## MVP Specifications
 

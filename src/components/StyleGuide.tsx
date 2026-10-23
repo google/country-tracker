@@ -30,12 +30,20 @@ const StyleGuide = () => {
         <h2 className="text-2xl font-semibold mb-4 border-b pb-2">Colors</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <div className="w-full h-24 bg-digital-atlas-blue-5 rounded-lg border mb-2"></div>
-            <p className="text-center font-medium">Digital Atlas Blue</p>
+            <div className="w-full h-24 rounded-lg border mb-2" style={{ backgroundColor: '#1D3557' }}></div>
+            <p className="text-center font-medium">Passport Navy (#1D3557)</p>
           </div>
           <div>
-            <div className="w-full h-24 bg-digital-atlas-cyan-5 rounded-lg border mb-2"></div>
-            <p className="text-center font-medium">Digital Atlas Cyan</p>
+            <div className="w-full h-24 rounded-lg border mb-2" style={{ backgroundColor: '#E63946' }}></div>
+            <p className="text-center font-medium">Postmark Vermilion (#E63946)</p>
+          </div>
+          <div>
+            <div className="w-full h-24 rounded-lg border mb-2" style={{ backgroundColor: '#2A9D8F' }}></div>
+            <p className="text-center font-medium">Botanical Teal (#2A9D8F)</p>
+          </div>
+          <div>
+            <div className="w-full h-24 rounded-lg border mb-2" style={{ backgroundColor: '#F4A261' }}></div>
+            <p className="text-center font-medium">Sunlit Marigold (#F4A261)</p>
           </div>
         </div>
       </section>

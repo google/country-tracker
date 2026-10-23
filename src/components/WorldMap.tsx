@@ -14,12 +14,25 @@
  * limitations under the License.
  */
 
+/**
+ * WorldMap — Vintage Cartographic Choropleth with Continent Color-Coding
+ *
+ * Architectural Rationale:
+ * Replaces the monochrome gray-on-gray map with a sunlit cartographic palette:
+ * 1. Real Ocean & Land Colors: Sea-glass ocean (`#E3F1EF` light / `#0D1B2A` dark) paired
+ *    with warm parchment unvisited landmasses (`#EFE8D8` light / `#1E2D40` dark).
+ * 2. Continent Color-Coding: Maps each visited country's `ccn3` numeric code to its
+ *    `RegionAccent` (`Asia`, `Europe`, `Americas`, `Africa`, `Oceania`) in O(1) lookup time
+ *    and renders a continent ink key bar along the bottom edge.
+ */
+
 'use client';
 
 import React, { memo } from 'react';
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simple-maps';
-import { useMantineTheme, Box } from '@mantine/core';
+import { useMantineTheme, Box, Group, Text } from '@mantine/core';
 import { countries, getCountryByCode } from '@/data/countries';
+import { CONTINENT_PALETTE, getRegionAccent, RegionAccent } from '@/theme';
 
 /** JSDoc
  * The TopoJSON geometry source URL for mapping the static paths of international borders.
@@ -38,58 +51,104 @@ interface WorldMapProps {
 const WorldMap: React.FC<WorldMapProps> = ({ visitedCountries }) => {
   const theme = useMantineTheme();
 
-  // Map user's 2-letter ISO codes to numeric 3-digit identifiers (ccn3) in O(1) time per visited country
-  const visitedNumericIds = new Set(
-    visitedCountries
-      .map(code2 => {
-        const country = getCountryByCode(code2, countries);
-        return country ? country.ccn3 : null;
-      })
-      .filter((ccn3): ccn3 is string => Boolean(ccn3))
-  );
+  // Map user's 2-letter ISO codes to numeric 3-digit identifiers (ccn3) -> RegionAccent in O(1) time
+  const visitedAccentByCcn3 = new Map<string, RegionAccent>();
+  visitedCountries.forEach(code2 => {
+    const country = getCountryByCode(code2, countries);
+    if (country && country.ccn3) {
+      visitedAccentByCcn3.set(country.ccn3.padStart(3, '0'), getRegionAccent(country.region));
+    }
+  });
+
+  const continentLegend = Object.values(CONTINENT_PALETTE);
 
   return (
-    <Box 
-      style={{ 
-        width: '100%', 
-        height: '400px', 
-        borderRadius: theme.radius.lg, 
-        overflow: 'hidden', 
-        backgroundColor: 'light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-8))',
-        border: '1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-5))'
+    <Box
+      style={{
+        width: '100%',
+        borderRadius: theme.radius.lg,
+        overflow: 'hidden',
+        backgroundColor: 'light-dark(#E3F1EF, #0D1B2A)',
+        border: '1px solid light-dark(#C5DAD6, #2A3B5C)',
+        position: 'relative',
       }}
     >
-      <ComposableMap
-        projection="geoMercator"
-        projectionConfig={{ scale: 120, center: [0, 20] }}
-        style={{ width: '100%', height: '100%' }}
+      <Box style={{ width: '100%', height: '420px' }}>
+        <ComposableMap
+          projection="geoMercator"
+          projectionConfig={{ scale: 120, center: [0, 20] }}
+          style={{ width: '100%', height: '100%' }}
+        >
+          <ZoomableGroup zoom={1}>
+            <Geographies geography={geoUrl}>
+              {({ geographies }) =>
+                geographies.map((geo) => {
+                  // Ensure geo.id string formatting (e.g., matching "004") with O(1) Map lookup
+                  const ccn3 = String(geo.id).padStart(3, '0');
+                  const visitedAccent = visitedAccentByCcn3.get(ccn3);
+                  
+                  return (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      fill={visitedAccent ? visitedAccent.hex : 'light-dark(#EFE8D8, #1E2D40)'}
+                      stroke="light-dark(#D4C9B0, #0D1B2A)"
+                      strokeWidth={0.6}
+                      style={{
+                        default: { outline: "none" },
+                        hover: {
+                          fill: visitedAccent ? visitedAccent.hoverHex : 'light-dark(#E2D8C1, #293D56)',
+                          outline: "none",
+                        },
+                        pressed: {
+                          fill: visitedAccent ? visitedAccent.hex : theme.colors['passport-navy'][6],
+                          outline: "none",
+                        }
+                      }}
+                    />
+                  );
+                })
+              }
+            </Geographies>
+          </ZoomableGroup>
+        </ComposableMap>
+      </Box>
+
+      {/* Continent Ink Legend Bar */}
+      <Group
+        justify="center"
+        gap="md"
+        px="md"
+        py={8}
+        style={{
+          backgroundColor: 'light-dark(rgba(255, 253, 249, 0.9), rgba(22, 33, 58, 0.9))',
+          borderTop: '1px solid light-dark(#DFD5C0, #2A3B5C)',
+        }}
       >
-        <ZoomableGroup zoom={1}>
-          <Geographies geography={geoUrl}>
-            {({ geographies }) =>
-              geographies.map((geo) => {
-                // Ensure geo.id string formatting (e.g., matching "004") with O(1) Set lookup
-                const isVisited = visitedNumericIds.has(String(geo.id).padStart(3, '0'));
-                
-                return (
-                  <Geography
-                    key={geo.rsmKey}
-                    geography={geo}
-                    fill={isVisited ? theme.colors['digital-atlas-cyan'][6] : 'light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-6))'}
-                    stroke="light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-8))"
-                    strokeWidth={0.5}
-                    style={{
-                      default: { outline: "none" },
-                      hover: { fill: isVisited ? theme.colors['digital-atlas-cyan'][4] : 'light-dark(var(--mantine-color-gray-4), var(--mantine-color-dark-5))', outline: "none" },
-                      pressed: { fill: theme.colors['digital-atlas-cyan'][8], outline: "none" }
-                    }}
-                  />
-                );
-              })
-            }
-          </Geographies>
-        </ZoomableGroup>
-      </ComposableMap>
+        {continentLegend.map((continent) => (
+          <Group key={continent.name} gap={6} align="center">
+            <span
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                backgroundColor: continent.hex,
+                display: 'inline-block',
+              }}
+            />
+            <Text
+              size="xs"
+              fw={600}
+              style={{
+                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                letterSpacing: '0.5px',
+              }}
+            >
+              {continent.name}
+            </Text>
+          </Group>
+        ))}
+      </Group>
     </Box>
   );
 };

@@ -23,6 +23,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { fetchPublicProfile } from '@/app/actions/profile';
 import WorldMap from '@/components/WorldMap';
 import { countries, getFlagEmoji, getCountryByCode } from '@/data/countries';
+import { getRegionAccent } from '@/theme';
 import Link from 'next/link';
 
 /** JSDoc
@@ -83,38 +84,49 @@ export default function PublicProfilePage({ params }: { params: Promise<{ uid: s
 
   return (
     <Container size="lg" py="xl">
-      <Card withBorder shadow="sm" radius="lg" padding="xl" mb="xl">
-        <Group justify="space-between" align="flex-start">
-          <Group align="center">
-            <Avatar src={profile.photoURL} radius="50%" size="xl" color="digital-atlas-cyan" name={profile.displayName} />
-            <Stack gap={2}>
-              <Title order={2}>{profile.displayName}'s Passport</Title>
-              <Text c="dimmed">{profile.isOwner ? "This is your public profile." : "Public Travel Profile"}</Text>
+      <Card withBorder shadow="sm" radius="lg" padding={0} mb="xl" style={{ overflow: 'hidden' }}>
+        <div className="airmail-border" />
+        <div style={{ padding: 'var(--mantine-spacing-xl)' }}>
+          <Group justify="space-between" align="flex-start">
+            <Group align="center">
+              <Avatar src={profile.photoURL} radius="50%" size="xl" color="passport-navy" name={profile.displayName} />
+              <Stack gap={2}>
+                <Title order={2}>{profile.displayName}'s Passport</Title>
+                <Text c="dimmed">{profile.isOwner ? "This is your public profile." : "Public Travel Profile"}</Text>
+              </Stack>
+            </Group>
+            <Stack align="center" gap={0}>
+               <Text
+                 size="3rem"
+                 fw={900}
+                 c="postmark-red.5"
+                 style={{
+                   lineHeight: 1,
+                   fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                 }}
+               >
+                {fullVisitedData.length}
+               </Text>
+               <Text fw={600} tt="uppercase" size="xs" c="dimmed" style={{ letterSpacing: '1px' }}>
+                  {fullVisitedData.length === 1 ? 'Country' : 'Countries'} Visited
+               </Text>
             </Stack>
           </Group>
-          <Stack align="center" gap={0}>
-             <Text size="3rem" fw={900} c="digital-atlas-cyan.6" style={{ lineHeight: 1 }}>
-              {fullVisitedData.length}
-             </Text>
-             <Text fw={600} tt="uppercase" size="xs" c="dimmed" style={{ letterSpacing: '1px' }}>
-                {fullVisitedData.length === 1 ? 'Country' : 'Countries'} Visited
-             </Text>
-          </Stack>
-        </Group>
 
-        {profile.isOwner && (
-          <Group mt="xl">
-             <Button variant="light" color="digital-atlas-cyan" onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-                alert("Profile Link Copied to clipboard!");
-             }}>
-               Copy Public Link 🔗
-             </Button>
-             <Button component={Link} href="/settings" variant="subtle" color="gray">
-               Edit Privacy
-             </Button>
-          </Group>
-        )}
+          {profile.isOwner && (
+            <Group mt="xl">
+               <Button variant="light" color="digital-atlas-cyan" onClick={() => {
+                  navigator.clipboard.writeText(window.location.href);
+                  alert("Profile Link Copied to clipboard!");
+               }}>
+                 Copy Public Link 🔗
+               </Button>
+               <Button component={Link} href="/settings" variant="subtle" color="gray">
+                 Edit Privacy
+               </Button>
+            </Group>
+          )}
+        </div>
       </Card>
 
       <Card withBorder shadow="sm" radius="lg" padding="xl" mb="xl">
@@ -128,17 +140,24 @@ export default function PublicProfilePage({ params }: { params: Promise<{ uid: s
            <Text c="dimmed">This passport is empty right now.</Text>
          ) : (
            <Group gap="sm">
-             {fullVisitedData.map((c: any) => (
-                <Badge 
-                  key={c.code} 
-                  size="xl" 
-                  variant="light" 
-                  color="digital-atlas-cyan" 
-                  leftSection={<span style={{ fontSize: '1.2rem' }}>{getFlagEmoji(c.code, c.flag)}</span>}
-                >
-                  {c.name}
-                </Badge>
-             ))}
+             {fullVisitedData.map((c: any) => {
+                const accent = getRegionAccent(c.region);
+                return (
+                  <Badge 
+                    key={c.code} 
+                    size="xl" 
+                    variant="outline" 
+                    style={{
+                      borderColor: accent.hex,
+                      color: accent.hex,
+                      backgroundColor: `light-dark(${accent.bgLight}, rgba(15, 23, 42, 0.5))`,
+                    }}
+                    leftSection={<span style={{ fontSize: '1.2rem' }}>{getFlagEmoji(c.code, c.flag)}</span>}
+                  >
+                    {c.name}
+                  </Badge>
+                );
+             })}
            </Group>
          )}
       </Card>

@@ -22,4 +22,4 @@ The project follows Google's style guides for frontend development.
 ## Testing Style Guide
 - **Requirement:** Every new feature, component, and code change must have corresponding unit tests.
 - **Tools:** Use Jest and React Testing Library (or whatever testing framework is configured in the project).
-- **Pre-commit Checks:** ALWAYS run the entire test suite and verify that all tests pass before committing. Committing code with failing or missing tests is strictly prohibited.
+- **Pre-commit Checks:** Before every commit or pull request, ALWAYS run the exact checks executed by the `.github/workflows/ci.yml` PR job (`npm run lint`, `npx tsc --noEmit`, and `npm run test:coverage` to enforce coverage thresholds, not just `npm test`) and verify all checks exit with code `0`. Committing code with lint errors, type errors, failing tests, or below-threshold test coverage is strictly prohibited.

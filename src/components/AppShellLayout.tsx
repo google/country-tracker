@@ -115,18 +115,53 @@ export default function AppShellLayout({ children }: AppShellLayoutProps) {
       }
       padding="md"
     >
-      <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          <Group>
+      <AppShell.Header style={{ overflow: 'hidden' }}>
+        {/* Vintage Par Avion airmail trim across the top of the global shell header */}
+        <div className="airmail-border" />
+        <Group h="calc(100% - 6px)" px="md" justify="space-between">
+          <Group gap="sm">
             {!isLoginPage && <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />}
-            <MapIcon />
-            <Title order={3} style={{ fontFamily: 'Inter, sans-serif' }}>World Tracker</Title>
+            <div
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 8,
+                backgroundColor: '#1D3557',
+                color: '#FAF6EE',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 6px rgba(29, 53, 87, 0.2)',
+              }}
+            >
+              <MapIcon />
+            </div>
+            <div>
+              <Group gap={8} align="baseline">
+                <Title order={3} style={{ fontFamily: 'Georgia, "Times New Roman", serif', letterSpacing: '-0.01em', lineHeight: 1.1 }}>
+                  World Tracker
+                </Title>
+                <Badge
+                  size="xs"
+                  variant="outline"
+                  color="postmark-red"
+                  visibleFrom="xs"
+                  style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace', letterSpacing: '1px' }}
+                >
+                  PAR AVION
+                </Badge>
+              </Group>
+            </div>
           </Group>
           <ActionIcon
             variant="default"
             onClick={() => toggleColorScheme()}
             size="lg"
             aria-label="Toggle color scheme"
+            style={{
+              borderColor: 'light-dark(#DFD5C0, #2A3B5C)',
+              backgroundColor: 'light-dark(#FAF6EE, #16213A)',
+            }}
           >
             {colorScheme === 'dark' ? <SunIcon /> : <MoonIcon />}
           </ActionIcon>
@@ -136,10 +171,22 @@ export default function AppShellLayout({ children }: AppShellLayoutProps) {
       {!isLoginPage && (
         <AppShell.Navbar p="md">
           <AppShell.Section grow>
+            <Text
+              size="xs"
+              fw={700}
+              tt="uppercase"
+              c="dimmed"
+              mb="xs"
+              px="xs"
+              style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace', letterSpacing: '1.2px' }}
+            >
+              Traveler Logbook
+            </Text>
             {links.map((link) => (
               <NavLink
                 key={link.path}
                 variant="filled"
+                color="passport-navy"
                 active={pathname === link.path}
                 label={link.label}
                 leftSection={link.icon}
@@ -148,16 +195,39 @@ export default function AppShellLayout({ children }: AppShellLayoutProps) {
                   router.push(link.path);
                   close();
                 }}
-                mb="sm"
-                style={{ borderRadius: '8px' }}
+                mb="xs"
+                style={{ borderRadius: '8px', fontWeight: pathname === link.path ? 700 : 500 }}
               />
             ))}
           </AppShell.Section>
-          <AppShell.Section>
-            <Anchor component={Link} href={`/profile/${user.uid}`} underline="never" c="inherit" style={{ display: 'block', marginBottom: '12px' }}>
-              <Group>
-                {user.photoURL && <img src={user.photoURL} alt="Profile" style={{ width: 32, height: 32, borderRadius: '50%' }} />}
-                <Text size="sm" fw={500}>{user.displayName || user.email}</Text>
+          <AppShell.Section
+            style={{
+              borderTop: '1px dashed light-dark(#DFD5C0, #2A3B5C)',
+              paddingTop: '12px',
+            }}
+          >
+            <Anchor
+              component={Link}
+              href={`/profile/${user.uid}`}
+              underline="never"
+              c="inherit"
+              style={{
+                display: 'block',
+                marginBottom: '12px',
+                padding: '8px 10px',
+                borderRadius: '8px',
+                backgroundColor: 'light-dark(#FFFDF9, #16213A)',
+                border: '1px solid light-dark(#DFD5C0, #2A3B5C)',
+              }}
+            >
+              <Group gap="sm" wrap="nowrap">
+                {user.photoURL && <img src={user.photoURL} alt="Profile" style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid #1D3557' }} />}
+                <div style={{ overflow: 'hidden' }}>
+                  <Text size="sm" fw={600} truncate="end">{user.displayName || user.email}</Text>
+                  <Text size="xs" c="dimmed" style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace', fontSize: '0.68rem' }}>
+                    VIEW PASSPORT →
+                  </Text>
+                </div>
               </Group>
             </Anchor>
             <Button variant="light" color="red" fullWidth onClick={logOut}>

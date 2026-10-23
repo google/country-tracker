@@ -14,11 +14,65 @@
  * limitations under the License.
  */
 
+/**
+ * Leaderboard — Traveler Standings & Podium Badges
+ *
+ * Architectural Rationale:
+ * Enhances top-3 podium standings (#1 Gold, #2 Silver, #3 Bronze) using inline
+ * 24x24 strokeWidth=2 Tabler SVG trophy/medal icons aligned with the icon system
+ * in `AppShellLayout.tsx` and `src/app/groups/[groupId]/page.tsx`.
+ */
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Table, Avatar, Group, Text, Badge, Paper, Anchor, Pagination, Stack, Center } from '@mantine/core';
+
+/**
+ * Inline 24x24 strokeWidth=2 Tabler trophy/medal icon matching AppShellLayout's SVG convention.
+ */
+const PodiumTrophyIcon: React.FC<{ color: string }> = ({ color }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ flexShrink: 0 }}
+  >
+    <path d="M8 21h8" />
+    <path d="M12 17v4" />
+    <path d="M7 4h10" />
+    <path d="M17 4v8a5 5 0 0 1 -10 0v-8" />
+    <circle cx="5" cy="9" r="2" />
+    <circle cx="19" cy="9" r="2" />
+  </svg>
+);
+
+const PODIUM_ACCENTS: Record<number, { color: string; bg: string; label: string }> = {
+  1: {
+    color: '#D97706',
+    bg: 'light-dark(rgba(244, 162, 97, 0.16), rgba(217, 119, 6, 0.15))',
+    label: 'Gold Explorer',
+  },
+  2: {
+    color: '#64748B',
+    bg: 'light-dark(rgba(148, 163, 184, 0.14), rgba(100, 116, 139, 0.14))',
+    label: 'Silver Explorer',
+  },
+  3: {
+    color: '#B45309',
+    bg: 'light-dark(rgba(217, 119, 6, 0.10), rgba(180, 83, 9, 0.12))',
+    label: 'Bronze Explorer',
+  },
+};
+
+const getPodiumAccent = (rank: number) => PODIUM_ACCENTS[rank] || null;
 
 /** JSDoc
  * Defines the structured payload expected for a single row in the leaderboard.
@@ -78,16 +132,34 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ entries, currentUserId }) => 
     const isCurrentUser = entry.uid === currentUserId;
     // Calculate the absolute global rank based on the page offset rather than relative row number
     const globalRank = (activePage - 1) * PAGE_SIZE + index + 1;
+    const podium = getPodiumAccent(globalRank);
     
     return (
       <Table.Tr 
         key={entry.idKey} 
-        style={isCurrentUser ? { backgroundColor: 'var(--mantine-color-digital-atlas-cyan-light)', fontWeight: 600 } : undefined}
+        style={
+          isCurrentUser
+            ? { backgroundColor: 'var(--mantine-color-digital-atlas-cyan-light)', fontWeight: 600 }
+            : podium
+              ? { backgroundColor: podium.bg }
+              : undefined
+        }
       >
         <Table.Td>
-          <Text fw={isCurrentUser ? 800 : 700} size="lg" c={isCurrentUser ? 'digital-atlas-cyan.6' : undefined}>
-            #{globalRank}
-          </Text>
+          <Group gap={6} wrap="nowrap">
+            {podium && <PodiumTrophyIcon color={podium.color} />}
+            <Text
+              fw={isCurrentUser || podium ? 800 : 700}
+              size="lg"
+              c={isCurrentUser ? 'digital-atlas-cyan.6' : undefined}
+              style={{
+                color: !isCurrentUser && podium ? podium.color : undefined,
+                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+              }}
+            >
+              #{globalRank}
+            </Text>
+          </Group>
         </Table.Td>
         <Table.Td>
           {/* Branch based on privacy limits. If a UID was exposed, allow hyperlinking to their full profile */}
@@ -96,7 +168,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ entries, currentUserId }) => 
               <Group gap="sm">
                 <Avatar src={entry.photoURL || undefined} radius="xl" name={entry.displayName} />
                 <div>
-                  <Text size="sm" fw={isCurrentUser ? 700 : 500} c={isCurrentUser ? 'digital-atlas-cyan.6' : undefined}>
+                  <Text size="sm" fw={isCurrentUser ? 700 : 600} c={isCurrentUser ? 'digital-atlas-cyan.6' : undefined}>
                     {entry.displayName} {isCurrentUser && "(You)"}
                   </Text>
                   {entry.isPrivateMode && (
@@ -119,7 +191,15 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ entries, currentUserId }) => 
           )}
         </Table.Td>
         <Table.Td>
-          <Badge variant={isCurrentUser ? "filled" : "light"} color="digital-atlas-cyan" size="lg" radius="sm">
+          <Badge
+            variant={isCurrentUser ? "filled" : "light"}
+            color={globalRank === 1 && !isCurrentUser ? "sunlit-marigold" : "digital-atlas-cyan"}
+            size="lg"
+            radius="sm"
+            style={{
+              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+            }}
+          >
             {entry.count} Countries
           </Badge>
         </Table.Td>
@@ -129,17 +209,20 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ entries, currentUserId }) => 
 
   return (
     <Stack gap="md">
-      <Paper withBorder shadow="sm" radius="lg" p="md">
-        <Table verticalSpacing="sm" highlightOnHover>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th w={80}>Rank</Table.Th>
-              <Table.Th>Explorer</Table.Th>
-              <Table.Th w={150}>Countries Visited</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{rows}</Table.Tbody>
-        </Table>
+      <Paper withBorder shadow="sm" radius="lg" p={0} style={{ overflow: 'hidden' }}>
+        <div className="airmail-border" />
+        <div style={{ padding: '1rem' }}>
+          <Table verticalSpacing="sm" highlightOnHover>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th w={100}>Rank</Table.Th>
+                <Table.Th>Explorer</Table.Th>
+                <Table.Th w={170}>Countries Visited</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>{rows}</Table.Tbody>
+          </Table>
+        </div>
       </Paper>
       
       {totalPages > 1 && (
